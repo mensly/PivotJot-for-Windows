@@ -11,5 +11,8 @@ namespace PivotJot
     {
         [Get("/services/v5/projects")]
         Task<List<Project>> GetProjects([Header("X-TrackerToken")] string token);
+
+        [Post("/services/v5/projects/{id}/stories")]
+        Task PostStory([Header("X-TrackerToken")] string token, [AliasAs("id")] int projectId, [Body] Story story);
     }
 }

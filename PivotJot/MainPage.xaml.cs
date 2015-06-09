@@ -199,6 +199,11 @@ namespace PivotJot
             {
                 await Task.Delay(4000);
             }
+            else
+            {
+                // TODO: Allow different kinds of stories
+                await pivotalApi.PostStory(token, Selected.ProjectId, new Story(titleEntry.Text));
+            }
             titleEntry.Text = "";
             LoadingSubmit = false;
             IsEnabled = true;

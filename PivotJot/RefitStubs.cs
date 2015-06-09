@@ -50,6 +50,12 @@ namespace PivotJot
             return (Task<List<Project>>) methodImpls["GetProjects"](Client, arguments);
         }
 
+        public virtual Task PostStory(string token,int projectId,Story story)
+        {
+            var arguments = new object[] { token,projectId,story };
+            return (Task) methodImpls["PostStory"](Client, arguments);
+        }
+
     }
 }
 
