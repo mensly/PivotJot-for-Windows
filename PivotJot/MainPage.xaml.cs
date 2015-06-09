@@ -1,8 +1,11 @@
-﻿using System;
+﻿using Refit;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Windows.Foundation;
@@ -23,16 +26,19 @@ namespace PivotJot
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
-    public sealed partial class MainPage : Page
+    public sealed partial class MainPage : Page, INotifyPropertyChanged
     {
         private const string TOKEN_DEBUG = "__debug__";
         private const int PAGE_LIST = 0;
         private const int PAGE_JOT = 1;
 
+        private IPivotalTrackerApi pivotalApi = RestService.For<IPivotalTrackerApi>("https://www.pivotaltracker.com");
         private Project selected;
         private readonly UserData userData = new UserData();
         private bool loadingList;
         private bool loadingSubmit;
+
+        public event PropertyChangedEventHandler PropertyChanged;
 
         public ObservableCollection<Project> Projects { get; private set; }
 
@@ -72,6 +78,7 @@ namespace PivotJot
             {
                 projectsList.SelectedItem = null;
                 Projects.Clear();
+                Selected = null;
                 userData.SetToken(null);
                 LoadingList = true;
                 LoadProjects();
@@ -119,6 +126,13 @@ namespace PivotJot
                     Projects.Add(new Project(1) { Name = "Test 1" });
                     Projects.Add(new Project(2) { Name = "Test 2" });
                 }
+                else
+                {
+                    foreach (Project p in await pivotalApi.GetProjects(token))
+                    {
+                        Projects.Add(p);
+                    }
+                }
                 if (Projects.Count == 0)
                 {
                     Projects.Add(Project.PLACEHOLDER_EMPTY);
@@ -126,6 +140,13 @@ namespace PivotJot
                 Projects.Add(Project.PLACEHOLDER_LOGOUT);
             }
             LoadingList = false;
+        }
+        private void NotifyPropertyChanged([CallerMemberName] String propertyName = "")
+        {
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+            }
         }
 
         public Project Selected
@@ -136,6 +157,7 @@ namespace PivotJot
                 selected = value;
                 titleEntry.IsEnabled = selected != null;
                 TextChanged(titleEntry, null);
+                NotifyPropertyChanged();
             }
         }
 
