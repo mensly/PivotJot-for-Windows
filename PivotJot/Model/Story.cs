@@ -29,10 +29,10 @@ namespace PivotJot
         public Story(string text, Type storyType = Type.Feature)
         {
             int split = text.IndexOf(':');
-            if (split > 0)
+            if (0 <= split && split < text.Length - 1)
             {
-                Name = text.Substring(0, split);
-                Description = text.Substring(split);
+                Name = text.Substring(0, split).Trim();
+                Description = text.Substring(split + 1).Trim();
             }
             else
             {

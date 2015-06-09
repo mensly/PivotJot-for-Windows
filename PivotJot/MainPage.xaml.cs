@@ -45,6 +45,8 @@ namespace PivotJot
         public MainPage()
         {
             this.InitializeComponent();
+            storyType.ItemsSource = Enum.GetValues(typeof(Story.Type)).Cast<Story.Type>();
+            storyType.SelectedIndex = 0;
             Projects = new ObservableCollection<Project>();
             var cachedProjects = userData.Projects;
             LoadingList = cachedProjects.Count == 0;
@@ -201,8 +203,8 @@ namespace PivotJot
             }
             else
             {
-                // TODO: Allow different kinds of stories
-                await pivotalApi.PostStory(token, Selected.ProjectId, new Story(titleEntry.Text));
+                var story = new Story(titleEntry.Text, (Story.Type)storyType.SelectedItem);
+                await pivotalApi.PostStory(token, Selected.ProjectId, story);
             }
             titleEntry.Text = "";
             LoadingSubmit = false;
