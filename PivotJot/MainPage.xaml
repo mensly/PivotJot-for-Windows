@@ -4,27 +4,33 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:PivotJot"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d">
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006">
+    <Page.Resources>
+        <DataTemplate x:Key="ProjectTemplate">
+            <ItemsControl>
+                <TextBlock Text="{Binding Path=Name}" HorizontalAlignment="Stretch"/>
+            </ItemsControl>
+        </DataTemplate>
+        <local:StringFormatConverter x:Key="Format" />
+    </Page.Resources>
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-        <Pivot Title="PivotJot" Grid.ColumnSpan="3">
+        <Pivot x:Name="pivotView" Title="PivotJot" Grid.ColumnSpan="3">
             <PivotItem Header="Projects">
-                <ListView x:Name="projectsList" HorizontalAlignment="Left" Margin="0,0,0,0" VerticalAlignment="Top" />
+                <ListView x:Name="projectsList" HorizontalAlignment="Stretch" Margin="0,0,0,0" VerticalAlignment="Top" 
+                          ItemTemplate="{StaticResource ProjectTemplate}"
+                          ItemsSource="{Binding Path=Projects}" SelectionChanged="ProjectSelected"/>
             </PivotItem>
-            <PivotItem Header="Jot Entry">
+            <PivotItem Header="Jot Story">
                 <Grid HorizontalAlignment="Stretch" Margin="10,10,10,0" VerticalAlignment="Top">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="131*"/>
-                        <ColumnDefinition Width="17*"/>
-                    </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                         <RowDefinition/>
                         <RowDefinition/>
                         <RowDefinition/>
                     </Grid.RowDefinitions>
-                    <TextBlock Text="Jot down a story for PROJECT_NAME" Margin="0,10" />
-                    <TextBox PlaceholderText="Story title: (Optional Description)" Grid.Row="1" Margin="0,0,0,0" Height="25" VerticalAlignment="Top" Grid.ColumnSpan="2" />
-                    <Button HorizontalAlignment="Right" Content="Submit" Grid.Row="2" Margin="0,10,10,10" Grid.ColumnSpan="2" />
+                    <TextBlock Text="{Binding Path=Selected, Converter={StaticResource Format}, ConverterParameter='Jot down a story about {0}'}" Margin="0,10" />
+                    <TextBox x:Name="titleEntry" PlaceholderText="Story title: (Optional Description)" Grid.Row="1" Margin="0,0,0,0" Height="25"
+                             VerticalAlignment="Top" Grid.ColumnSpan="2" TextChanged="TextChanged" />
+                    <Button x:Name="submitBtn" HorizontalAlignment="Right" Content="Submit" Grid.Row="2" Margin="0,10,10,10" Grid.ColumnSpan="2" />
                 </Grid>
             </PivotItem>
         </Pivot>
