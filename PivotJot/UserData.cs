@@ -15,7 +15,6 @@ namespace PivotJot
     {
         private ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
         private DataProtectionProvider protectionProvider = new DataProtectionProvider("LOCAL=user");
-        // TODO: Cache selected
 
         private string token;
         public async Task<string> GetToken()
@@ -73,6 +72,12 @@ namespace PivotJot
                     localSettings.Values.Remove("projects");
                 }
             }
+        }
+
+        public int SelectedId
+        {
+            get { return localSettings.Values["selected"] as int? ?? -1; }
+            set { localSettings.Values["selected"] = value; }
         }
         
     }

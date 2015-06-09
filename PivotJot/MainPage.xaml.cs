@@ -49,8 +49,25 @@ namespace PivotJot
             storyType.SelectedIndex = 0;
             Projects = new ObservableCollection<Project>();
             var cachedProjects = userData.Projects;
-            LoadingList = cachedProjects.Count == 0;
             PopulateProjectList(cachedProjects);
+            if (cachedProjects.Count == 0)
+            {
+                LoadingList = true;
+            }
+            else
+            {
+                int selected = userData.SelectedId;
+                foreach (var p in cachedProjects)
+                {
+                    if (p.ProjectId == selected)
+                    {
+                        projectsList.SelectedItem = p;
+                        Selected = p;
+                        ShowJotPage();
+                        break;
+                    }
+                }
+            }
             LoadProjects();
             this.DataContext = this;
 
@@ -74,7 +91,7 @@ namespace PivotJot
             }
         }
 
-        private async void ProjectSelected(object sender, SelectionChangedEventArgs e)
+        private void ProjectSelected(object sender, SelectionChangedEventArgs e)
         {
             Selected = e.AddedItems.FirstOrDefault() as Project;
             if (Selected == Project.PLACEHOLDER_LOGOUT)
@@ -92,10 +109,15 @@ namespace PivotJot
             }
             else if (Selected != null)
             {
-                pivotView.SelectedIndex = PAGE_JOT;
-                await Task.Delay(250);
-                titleEntry.Focus(FocusState.Programmatic);
+                ShowJotPage();
             }
+        }
+
+        private async void ShowJotPage()
+        {
+            pivotView.SelectedIndex = PAGE_JOT;
+            await Task.Delay(250);
+            titleEntry.Focus(FocusState.Programmatic);
         }
 
         private void TextChanged(object sender, TextChangedEventArgs e)
@@ -170,6 +192,7 @@ namespace PivotJot
             set
             {
                 selected = value;
+                userData.SelectedId = selected.ProjectId;
                 titleEntry.IsEnabled = selected != null;
                 TextChanged(titleEntry, null);
                 NotifyPropertyChanged();
