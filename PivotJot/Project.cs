@@ -8,6 +8,8 @@ namespace PivotJot
 {
     public class Project
     {
+        public static readonly Project PLACEHOLDER_LOGOUT = new Project(-1) { Name = "Logout" };
+        public static readonly Project PLACEHOLDER_EMPTY = new Project(-1) { Name = "No projects" };
         public int ProjectId { get; private set; }
         public String Name { get; set; }
         public List<String> Tags { get; set; }

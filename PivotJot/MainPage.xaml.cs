@@ -30,7 +30,7 @@ namespace PivotJot
         private const int PAGE_JOT = 1;
 
         private Project selected;
-        private string token = TOKEN_DEBUG;
+        private readonly UserData userData = new UserData();
         private bool loadingList;
         private bool loadingSubmit;
 
@@ -68,7 +68,19 @@ namespace PivotJot
         private async void ProjectSelected(object sender, SelectionChangedEventArgs e)
         {
             Selected = e.AddedItems.FirstOrDefault() as Project;
-            if (Selected != null)
+            if (Selected == Project.PLACEHOLDER_LOGOUT)
+            {
+                projectsList.SelectedItem = null;
+                Projects.Clear();
+                userData.SetToken(null);
+                LoadingList = true;
+                LoadProjects();
+            }
+            else if (Selected == Project.PLACEHOLDER_EMPTY)
+            {
+                projectsList.SelectedItem = null;
+            }
+            else if (Selected != null)
             {
                 pivotView.SelectedIndex = PAGE_JOT;
                 await Task.Delay(250);
@@ -81,16 +93,39 @@ namespace PivotJot
             submitBtn.IsEnabled = Selected != null && titleEntry.Text.Length > 0;
         }
 
+        private async Task<string> GetToken()
+        {
+            string token = await userData.GetToken();
+#if DEBUG
+            if (token == null) { return TOKEN_DEBUG; }
+            // if (token == null) { token = "REDACTED"; userData.SetToken(token); }
+#endif
+            return token;
+        }
+
         private async void LoadProjects()
         {
-            if (token == TOKEN_DEBUG)
+            await Task.Delay(2000);
+            Projects.Clear();
+            string token = await GetToken();
+            if (token == null)
             {
-                await Task.Delay(2000);
-                Projects.Clear();
-                Projects.Add(new Project(1) { Name = "Test 1" });
-                Projects.Add(new Project(2) { Name = "Test 2" });
-                LoadingList = false;
+                // TODO: Show login UI
             }
+            else
+            {
+                if (token == TOKEN_DEBUG)
+                {
+                    Projects.Add(new Project(1) { Name = "Test 1" });
+                    Projects.Add(new Project(2) { Name = "Test 2" });
+                }
+                if (Projects.Count == 0)
+                {
+                    Projects.Add(Project.PLACEHOLDER_EMPTY);
+                }
+                Projects.Add(Project.PLACEHOLDER_LOGOUT);
+            }
+            LoadingList = false;
         }
 
         public Project Selected
@@ -124,6 +159,7 @@ namespace PivotJot
         {
             IsEnabled = false;
             LoadingSubmit = true;
+            string token = await GetToken();
             if (token == TOKEN_DEBUG)
             {
                 await Task.Delay(4000);
