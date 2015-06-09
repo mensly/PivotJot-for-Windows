@@ -46,8 +46,9 @@ namespace PivotJot
         {
             this.InitializeComponent();
             Projects = new ObservableCollection<Project>();
-            // TODO: Reload projects from cache
-            LoadingList = Projects.Count == 0;
+            var cachedProjects = userData.Projects;
+            LoadingList = cachedProjects.Count == 0;
+            PopulateProjectList(cachedProjects);
             LoadProjects();
             this.DataContext = this;
 
@@ -112,7 +113,6 @@ namespace PivotJot
 
         private async void LoadProjects()
         {
-            await Task.Delay(2000);
             Projects.Clear();
             string token = await GetToken();
             if (token == null)
@@ -123,24 +123,37 @@ namespace PivotJot
             {
                 if (token == TOKEN_DEBUG)
                 {
-                    Projects.Add(new Project(1) { Name = "Test 1" });
-                    Projects.Add(new Project(2) { Name = "Test 2" });
+                    await Task.Delay(2000);
+                    PopulateProjectList(new List<Project>()
+                    {
+                        new Project(1) { Name = "Test 1" },
+                        new Project(2) { Name = "Test 2" },
+                        new Project(3) { Name = "Test 3" },
+                    });
                 }
                 else
                 {
-                    foreach (Project p in await pivotalApi.GetProjects(token))
-                    {
-                        Projects.Add(p);
-                    }
+                    var projects = await pivotalApi.GetProjects(token);
+                    userData.Projects = projects;
+                    PopulateProjectList(projects);
                 }
-                if (Projects.Count == 0)
-                {
-                    Projects.Add(Project.PLACEHOLDER_EMPTY);
-                }
-                Projects.Add(Project.PLACEHOLDER_LOGOUT);
             }
             LoadingList = false;
         }
+
+        private void PopulateProjectList(ICollection<Project> projects)
+        {
+            foreach (Project p in projects)
+            {
+                Projects.Add(p);
+            }
+            if (Projects.Count == 0)
+            {
+                Projects.Add(Project.PLACEHOLDER_EMPTY);
+            }
+            Projects.Add(Project.PLACEHOLDER_LOGOUT);
+        }
+
         private void NotifyPropertyChanged([CallerMemberName] String propertyName = "")
         {
             if (PropertyChanged != null)

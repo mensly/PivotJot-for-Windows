@@ -15,7 +15,6 @@ namespace PivotJot
     {
         private ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
         private DataProtectionProvider protectionProvider = new DataProtectionProvider("LOCAL=user");
-        // TODO: Cache projects
         // TODO: Cache selected
 
         private string token;
@@ -46,6 +45,33 @@ namespace PivotJot
                 var encoded = CryptographicBuffer.ConvertStringToBinary(token, BinaryStringEncoding.Utf8);
                 var encrypted = await protectionProvider.ProtectAsync(encoded);
                 localSettings.Values["token"] = CryptographicBuffer.EncodeToBase64String(encrypted);
+            }
+        }
+
+        public List<Project> Projects
+        {
+            get
+            {
+                string json = localSettings.Values["projects"] as string;
+                if (json != null)
+                {
+                    return JsonConvert.DeserializeObject<List<Project>>(json);
+                }
+                else
+                {
+                    return new List<Project>();
+                }
+            }
+            set
+            {
+                if (value != null && value.Count > 0)
+                {
+                    localSettings.Values["projects"] = JsonConvert.SerializeObject(value);
+                }
+                else
+                {
+                    localSettings.Values.Remove("projects");
+                }
             }
         }
         
