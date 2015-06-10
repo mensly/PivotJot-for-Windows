@@ -40,7 +40,7 @@
         <uap:SplashScreen Image="Assets\SplashScreen.png" />
       </uap:VisualElements>
     </Application>
-  </Applications>
+  </Applications> 
 
   <Capabilities>
     <Capability Name="internetClient" />

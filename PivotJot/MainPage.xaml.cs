@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
@@ -50,13 +51,14 @@ namespace PivotJot
             storyType.SelectedIndex = 0;
             Projects = new ObservableCollection<Project>();
             var cachedProjects = userData.Projects;
-            PopulateProjectList(cachedProjects);
-            if (cachedProjects.Count == 0)
+            if (cachedProjects.Count() == 0)
             {
                 LoadingList = true;
+                PopulateProjectList(cachedProjects, false);
             }
             else
             {
+                PopulateProjectList(cachedProjects, true);
                 int selected = userData.SelectedId;
                 foreach (var p in cachedProjects)
                 {
@@ -95,22 +97,28 @@ namespace PivotJot
         private void ProjectSelected(object sender, SelectionChangedEventArgs e)
         {
             Selected = e.AddedItems.FirstOrDefault() as Project;
-            if (Selected == Project.PLACEHOLDER_LOGOUT)
-            {
-                projectsList.SelectedItem = null;
-                Projects.Clear();
-                Selected = null;
-                userData.SetToken(null);
-                LoadingList = true;
-                LoadProjects();
-            }
-            else if (Selected == Project.PLACEHOLDER_EMPTY)
-            {
-                projectsList.SelectedItem = null;
-            }
-            else if (Selected != null)
+            if (Selected != null && !Selected.IsPlaceholder)
             {
                 ShowJotPage();
+            }
+            else
+            {
+                projectsList.SelectedItem = null;
+                if (Selected == Project.PLACEHOLDER_LOGOUT)
+                {
+                    Projects.Clear();
+                    userData.Projects = null;
+                    Selected = null;
+                    userData.SetToken(null);
+                    LoadingList = true;
+                    LoadProjects();
+                }
+                else if (Selected == Project.PLACEHOLDER_ERROR)
+                {
+                    Projects.Clear();
+                    LoadingList = true;
+                    LoadProjects();
+                }
             }
         }
 
@@ -158,25 +166,40 @@ namespace PivotJot
                 }
                 else
                 {
-                    var projects = await pivotalApi.GetProjects(token);
-                    userData.Projects = projects;
-                    PopulateProjectList(projects);
+                    try
+                    {
+                        var projects = await pivotalApi.GetProjects(token);
+                        userData.Projects = projects;
+                        PopulateProjectList(projects);
+                    }
+                    catch (HttpRequestException)
+                    {
+                        if (Projects.Count == 0)
+                        {
+                            Projects.Add(Project.PLACEHOLDER_ERROR);
+                            Projects.Add(Project.PLACEHOLDER_LOGOUT);
+                            pivotView.SelectedItem = PAGE_LIST;
+                        }
+                    }
                 }
             }
             LoadingList = false;
         }
 
-        private void PopulateProjectList(ICollection<Project> projects)
+        private void PopulateProjectList(IEnumerable<Project> projects, bool isLoggedIn = true)
         {
             foreach (Project p in projects)
             {
                 Projects.Add(p);
             }
-            if (Projects.Count == 0)
+            if (isLoggedIn)
             {
-                Projects.Add(Project.PLACEHOLDER_EMPTY);
+                if (Projects.Count == 0)
+                {
+                    Projects.Add(Project.PLACEHOLDER_EMPTY);
+                }
+                Projects.Add(Project.PLACEHOLDER_LOGOUT);
             }
-            Projects.Add(Project.PLACEHOLDER_LOGOUT);
         }
 
         private void NotifyPropertyChanged([CallerMemberName] String propertyName = "")
@@ -193,7 +216,7 @@ namespace PivotJot
             set
             {
                 selected = value;
-                userData.SelectedId = selected.ProjectId;
+                userData.SelectedId = selected == null ? -1 : selected.ProjectId;
                 titleEntry.IsEnabled = selected != null;
                 TextChanged(titleEntry, null);
                 NotifyPropertyChanged();

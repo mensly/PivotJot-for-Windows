@@ -56,6 +56,12 @@ namespace PivotJot
             return (Task) methodImpls["PostStory"](Client, arguments);
         }
 
+        public virtual Task<User> Authorize(string authorization)
+        {
+            var arguments = new object[] { authorization };
+            return (Task<User>) methodImpls["Authorize"](Client, arguments);
+        }
+
     }
 }
 

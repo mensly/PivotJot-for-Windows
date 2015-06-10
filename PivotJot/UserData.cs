@@ -47,7 +47,7 @@ namespace PivotJot
             }
         }
 
-        public List<Project> Projects
+        public IEnumerable<Project> Projects
         {
             get
             {
@@ -63,7 +63,7 @@ namespace PivotJot
             }
             set
             {
-                if (value != null && value.Count > 0)
+                if (value != null && value.Count() > 0)
                 {
                     localSettings.Values["projects"] = JsonConvert.SerializeObject(value);
                 }
