@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Text;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
@@ -241,6 +242,20 @@ namespace PivotJot
             {
                 Submit(sender, new RoutedEventArgs());
             }
+        }
+
+        private async void Login()
+        {
+            // TODO: UI
+            string username = "TODO";
+            string password = "TODO";
+            string authInfo = username + ":" + password;
+            authInfo = Convert.ToBase64String(Encoding.UTF8.GetBytes(authInfo));
+            var user = await pivotalApi.Authorize("Basic " + authInfo);
+            // TODO: Handle errors
+            userData.SetToken(user.Token);
+            LoadingList = true;
+            LoadProjects();
         }
     }
 }
