@@ -1,0 +1,32 @@
+﻿<Page
+    x:Class="PivotJot.LoginPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:PivotJot"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+    <Grid x:Name="mainGrid" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <ProgressBar x:Name="loadingIndicator" IsIndeterminate="True" VerticalAlignment="Top" Visibility="Collapsed" HorizontalAlignment="Stretch" />
+        <Grid Margin="20" VerticalAlignment="Top">
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3*"/>
+                <ColumnDefinition Width="2*"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="Log in with your Pivotal Tracker credentials" Style="{ThemeResource SubtitleTextBlockStyle}"  Grid.ColumnSpan="2"/>
+            <TextBlock Text="Username" Style="{ThemeResource CaptionTextBlockStyle}" Grid.Row="1"/>
+            <TextBox x:Name="usernameEntry" PlaceholderText="Username" Grid.Row="2" Grid.ColumnSpan="2" TextChanged="TextChanged" KeyDown="OnKeyDown"/>
+            <TextBlock Text="Password" Style="{ThemeResource CaptionTextBlockStyle}" Grid.Row="3" Margin="0,10,0,0"/>
+            <PasswordBox x:Name="passwordEntry" PlaceholderText="Password" Grid.Row="4" Grid.ColumnSpan="2" PasswordChanged="TextChanged" KeyDown="OnKeyDown" />
+            <Button x:Name="submitBtn" Grid.Row="5" Grid.Column="2" Content="Login" HorizontalAlignment="Stretch" Margin="10" Click="Login" IsEnabled="False" />
+        </Grid>
+    </Grid>
+</Page>

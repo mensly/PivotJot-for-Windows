@@ -34,7 +34,7 @@ namespace PivotJot
         private const int PAGE_LIST = 0;
         private const int PAGE_JOT = 1;
 
-        private IPivotalTrackerApi pivotalApi = RestService.For<IPivotalTrackerApi>("https://www.pivotaltracker.com");
+        public static readonly IPivotalTrackerApi PIVOTAL = RestService.For<IPivotalTrackerApi>("https://www.pivotaltracker.com");
         private Project selected;
         private readonly UserData userData = new UserData();
         private bool loadingList;
@@ -51,9 +51,9 @@ namespace PivotJot
             storyType.SelectedIndex = 0;
             Projects = new ObservableCollection<Project>();
             var cachedProjects = userData.Projects;
-            if (cachedProjects.Count() == 0)
+            LoadingList = cachedProjects.Count() == 0;
+            if (LoadingList)
             {
-                LoadingList = true;
                 PopulateProjectList(cachedProjects, false);
             }
             else
@@ -101,9 +101,8 @@ namespace PivotJot
             {
                 ShowJotPage();
             }
-            else
+            else if (selected != null)
             {
-                projectsList.SelectedItem = null;
                 if (Selected == Project.PLACEHOLDER_LOGOUT)
                 {
                     Projects.Clear();
@@ -119,6 +118,7 @@ namespace PivotJot
                     LoadingList = true;
                     LoadProjects();
                 }
+                projectsList.SelectedItem = null;
             }
         }
 
@@ -138,7 +138,7 @@ namespace PivotJot
         {
             string token = await userData.GetToken();
 #if DEBUG
-            if (token == null) { return TOKEN_DEBUG; }
+            // if (token == null) { return TOKEN_DEBUG; }
             // if (token == null) { token = "REDACTED"; userData.SetToken(token); }
 #endif
             return token;
@@ -150,7 +150,8 @@ namespace PivotJot
             string token = await GetToken();
             if (token == null)
             {
-                // TODO: Show login UI
+                overlayFrame.Visibility = Visibility.Visible;
+                overlayFrame.Navigate(typeof(LoginPage));
             }
             else
             {
@@ -168,7 +169,7 @@ namespace PivotJot
                 {
                     try
                     {
-                        var projects = await pivotalApi.GetProjects(token);
+                        var projects = await PIVOTAL.GetProjects(token);
                         userData.Projects = projects;
                         PopulateProjectList(projects);
                     }
@@ -251,7 +252,7 @@ namespace PivotJot
             else
             {
                 var story = new Story(titleEntry.Text, (Story.Type)storyType.SelectedItem);
-                await pivotalApi.PostStory(token, Selected.ProjectId, story);
+                await PIVOTAL.PostStory(token, Selected.ProjectId, story);
             }
             titleEntry.Text = "";
             LoadingSubmit = false;
@@ -267,16 +268,9 @@ namespace PivotJot
             }
         }
 
-        private async void Login()
+        public void LoginComplete(string token)
         {
-            // TODO: UI
-            string username = "TODO";
-            string password = "TODO";
-            string authInfo = username + ":" + password;
-            authInfo = Convert.ToBase64String(Encoding.UTF8.GetBytes(authInfo));
-            var user = await pivotalApi.Authorize("Basic " + authInfo);
-            // TODO: Handle errors
-            userData.SetToken(user.Token);
+            userData.SetToken(token);
             LoadingList = true;
             LoadProjects();
         }

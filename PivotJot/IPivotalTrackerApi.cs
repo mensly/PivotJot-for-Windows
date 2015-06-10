@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace PivotJot
 {
-    interface IPivotalTrackerApi
+    public interface IPivotalTrackerApi
     {
         [Get("/services/v5/projects")]
         Task<List<Project>> GetProjects([Header("X-TrackerToken")] string token);
